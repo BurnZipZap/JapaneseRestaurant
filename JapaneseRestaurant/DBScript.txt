@@ -1,0 +1,160 @@
+DROP DATABASE  IF EXISTS `sushi-house`;
+
+CREATE DATABASE  IF NOT EXISTS `sushi-house`;
+USE `sushi-house`;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `geolocation`;
+CREATE TABLE `geolocation` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `city` varchar(20) NOT NULL,
+  `street` varchar(20) NOT NULL,
+  `house` int(1) NOT NULL,
+  `porch` int(1),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+INSERT INTO `geolocation` VALUES 
+(1,'Rostov','Lenina',1,1),
+(2,'Rostov','Lenina',2,2),
+(3,'Rostov','Lenina',3,1),
+(4,'Rostov','Lenina',4,2),
+(5,'Rostov','Lenina',5,1),
+(6,'Rostov','Lenina',6,2),
+(7,'Rostov','Lenina',7,1),
+(8,'Rostov','Lenina',8,3),
+(9,'Rostov','Lenina',9,1),
+(10,'Rostov','Lenina',10,1);
+
+DROP TABLE IF EXISTS `dish`;
+CREATE TABLE `dish` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `name` varchar(30) NOT NULL,
+  `cost` int(1) NOT NULL,
+  `сalorie_content` int(1),
+  `category` varchar(15) NOT NULL,
+  `image_href` varchar(256) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `dish` VALUES 
+(1,'Ясай Маки', 250, 225, 'ClassicRoll', 'http://xn--90asilg6f.xn----8sbloxlnds4c.xn--p1ai/media/zoo/images/zap-set_9fe6aa55bbc52bce722253cafa16c1c3.jpg'),
+(2,'Чука Маки', 260, 235, 'ClassicRoll', 'http://xn--90asilg6f.xn----8sbloxlnds4c.xn--p1ai/media/zoo/images/zap-set_9fe6aa55bbc52bce722253cafa16c1c3.jpg'),
+(3,'Эби Маки', 70, 225, 'ClassicRoll', 'http://xn--90asilg6f.xn----8sbloxlnds4c.xn--p1ai/media/zoo/images/zap-set_9fe6aa55bbc52bce722253cafa16c1c3.jpg'),
+(4,'Кани Маки', 120, 255, 'FryRoll', 'http://xn--90asilg6f.xn----8sbloxlnds4c.xn--p1ai/media/zoo/images/zap-set_9fe6aa55bbc52bce722253cafa16c1c3.jpg');
+
+DROP TABLE IF EXISTS `feedback`;
+CREATE TABLE `feedback` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `number` varchar(12) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `feedback` VALUES 
+(1,'89525790296', 'apply'),
+(2,'89515154976', 'apply');
+
+DROP TABLE IF EXISTS `ingredient`;
+CREATE TABLE `ingredient` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `name` varchar(20) NOT NULL,
+  `supplier` varchar(30),
+  `mass_now` int(1) NOT NULL,
+  `mass_all` int(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `ingredient` VALUES 
+(1,'fish', 'fishmarket',20,24),
+(2,'ris', 'risovar',20,24),
+(3,'unagi',  'risovar',20,24),
+(4,'omlet', 'perek',20,24),
+(5,'ogurets', 'perek',20,24);
+
+DROP TABLE IF EXISTS `dish_ingredient`;
+CREATE TABLE `dish_ingredient` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `id_dish` int(1) NOT NULL,	
+  `id_ingredient` int(1) NOT NULL,
+  `mass` int(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `dish_ingredient_con1` FOREIGN KEY (`id_dish`) REFERENCES `dish` (`id`),
+  CONSTRAINT `dish_ingredient_con2` FOREIGN KEY (`id_ingredient`) REFERENCES `ingredient` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `dish_ingredient` VALUES 
+(1,1, 1, 200),
+(2,1, 2, 300),
+(3,2, 1, 400),
+(4,2, 3, 100),
+(5,2, 4, 200),
+(6,3, 1, 300),
+(7,3, 2, 150),
+(8,4, 1, 200),
+(9,4, 4, 200);
+
+
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `id_geolocation` int(1),
+  `username` varchar(20) NOT NULL,
+  `password` varchar(512) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_un` (`username`),
+  CONSTRAINT `users_con` FOREIGN KEY (`id_geolocation`) REFERENCES `geolocation` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `users` VALUES 
+(1, 10, 'admin', '{bcrypt}$2a$10$G2g98Fb95P6mzhzMHtRukOaYqQ7kJ8V9YUluIvznhyTHkcLPOsHFi', 1),
+(2, 9, 'user', '{bcrypt}$2a$10$G2g98Fb95P6mzhzMHtRukOaYqQ7kJ8V9YUluIvznhyTHkcLPOsHFi', 1);
+
+DROP TABLE IF EXISTS `authorities`;
+CREATE TABLE `authorities` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,	
+  `id_users` int(1) NOT NULL,
+  `authority` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `authorities_un` (`id_users`,`authority`),
+  CONSTRAINT `authorities_con` FOREIGN KEY (`id_users`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `authorities` VALUES 
+(1, 1, 'ROLE_ADMIN'),
+(2, 1, 'ROLE_USER'),
+(3, 2, 'ROLE_USER');
+
+
+
+DROP TABLE IF EXISTS `ord`;
+CREATE TABLE `ord` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,
+  `id_users` int(1) NOT NULL,
+  `id_geolocation` int(1) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `dt_order` datetime,
+  `dt_delivered` datetime,
+  `cost` int(1) NOT NULL,
+  `discount` int(1),
+  `number` varchar(12),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `ord_con1` FOREIGN KEY (`id_users`) REFERENCES `users` (`id`),
+  CONSTRAINT `ord_con2` FOREIGN KEY (`id_geolocation`) REFERENCES `geolocation` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `ord_dish`;
+CREATE TABLE `ord_dish` (
+  `id` int(1) NOT NULL AUTO_INCREMENT,	
+  `id_ord` int(1) NOT NULL,	
+  `id_dish` int(1) NOT NULL,
+  `count` int(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `ord_dish_con1` FOREIGN KEY (`id_ord`) REFERENCES `ord` (`id`),
+  CONSTRAINT `ord_dish_con2` FOREIGN KEY (`id_dish`) REFERENCES `dish` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+SET FOREIGN_KEY_CHECKS = 1;
